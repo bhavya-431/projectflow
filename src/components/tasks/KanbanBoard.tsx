@@ -184,7 +184,27 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+      {/* Mobile Column Quick Navigation Tabs */}
+      <div className="flex md:hidden items-center gap-2 mb-3 overflow-x-auto pb-1">
+        {COLUMNS.map((col) => {
+          const count = tasks.filter((t) => t.status === col.status).length
+          return (
+            <button
+              key={col.status}
+              type="button"
+              onClick={() => {
+                const el = document.getElementById(`column-${col.status}`)
+                el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
+              }}
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-500 whitespace-nowrap shadow-xs"
+            >
+              {col.title} ({count})
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="flex md:grid md:grid-cols-3 gap-4 sm:gap-6 items-start overflow-x-auto pb-4 snap-x snap-mandatory">
         {COLUMNS.map((col) => {
           const colTasks = tasks
             .filter((t) => t.status === col.status)

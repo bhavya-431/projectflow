@@ -56,6 +56,9 @@ export const MyTasksPage: React.FC = () => {
 
   useEffect(() => {
     loadData()
+    const handleUpdate = () => loadData()
+    window.addEventListener('projectflow:data-updated', handleUpdate)
+    return () => window.removeEventListener('projectflow:data-updated', handleUpdate)
   }, [user?.id])
 
   // Quick toggle status directly from row

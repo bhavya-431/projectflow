@@ -82,6 +82,9 @@ export const ProjectWorkspacePage: React.FC = () => {
 
   useEffect(() => {
     loadWorkspace()
+    const handleUpdate = () => loadWorkspace()
+    window.addEventListener('projectflow:data-updated', handleUpdate)
+    return () => window.removeEventListener('projectflow:data-updated', handleUpdate)
   }, [loadWorkspace])
 
   // Filtered and sorted tasks

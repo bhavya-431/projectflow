@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- PROJECTFLOW: Initial Database Migration
--- Version: 1.0.0
+-- Version: 1.0.1 (Hardened Security Release)
 -- Description: Production-ready PostgreSQL schema with RLS, triggers, & indexes
 -- ==============================================================================
 
@@ -85,7 +85,7 @@ BEGIN
   NEW.updated_at = TIMEZONE('utc'::text, NOW());
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS set_projects_updated_at ON public.projects;
 CREATE TRIGGER set_projects_updated_at
@@ -116,7 +116,7 @@ BEGIN
       avatar_url = EXCLUDED.avatar_url;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -135,7 +135,7 @@ BEGIN
   ON CONFLICT (project_id, user_id) DO UPDATE SET role = 'owner';
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_project_created_add_owner ON public.projects;
 CREATE TRIGGER on_project_created_add_owner
@@ -179,6 +179,13 @@ CREATE POLICY "Profiles viewable by authenticated users"
   FOR SELECT
   TO authenticated
   USING (true);
+
+-- Authenticated users can insert their own profile
+CREATE POLICY "Users can insert own profile"
+  ON public.profiles
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = id);
 
 -- Users can only update their own profile
 CREATE POLICY "Users can update own profile"
@@ -255,7 +262,7 @@ CREATE POLICY "Owners and admins can add project members"
     public.get_project_role(project_id, auth.uid()) IN ('owner', 'admin')
   );
 
--- Owners can update member roles
+-- Only owners can update member roles
 CREATE POLICY "Owners can update member roles"
   ON public.project_members
   FOR UPDATE
@@ -266,6 +273,16 @@ CREATE POLICY "Owners can update member roles"
       WHERE p.id = project_id AND p.owner_id = auth.uid()
     ) OR
     public.get_project_role(project_id, auth.uid()) = 'owner'
+  )
+  WITH CHECK (
+    (
+      EXISTS (
+        SELECT 1 FROM public.projects p
+        WHERE p.id = project_id AND p.owner_id = auth.uid()
+      ) OR
+      public.get_project_role(project_id, auth.uid()) = 'owner'
+    ) AND
+    role IN ('owner', 'admin', 'member')
   );
 
 -- Owners can remove members, and members can remove themselves
@@ -312,7 +329,7 @@ CREATE POLICY "Members can create tasks"
     )
   );
 
--- Members can update tasks (status, title, description, priority, order, assignee)
+-- Members can update tasks (assignee must remain member or null)
 CREATE POLICY "Members can update tasks"
   ON public.tasks
   FOR UPDATE
@@ -322,11 +339,17 @@ CREATE POLICY "Members can update tasks"
     EXISTS (SELECT 1 FROM public.projects p WHERE p.id = project_id AND p.owner_id = auth.uid())
   )
   WITH CHECK (
-    public.is_project_member(project_id, auth.uid()) OR
-    EXISTS (SELECT 1 FROM public.projects p WHERE p.id = project_id AND p.owner_id = auth.uid())
+    (
+      public.is_project_member(project_id, auth.uid()) OR
+      EXISTS (SELECT 1 FROM public.projects p WHERE p.id = project_id AND p.owner_id = auth.uid())
+    ) AND
+    (
+      assignee_id IS NULL OR
+      public.is_project_member(project_id, assignee_id)
+    )
   );
 
--- Members can delete tasks
+-- Members can delete tasks (task creator or project owner/admin)
 CREATE POLICY "Members can delete tasks"
   ON public.tasks
   FOR DELETE

@@ -123,6 +123,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       }
 
       onSuccess?.(result)
+      window.dispatchEvent(new CustomEvent('projectflow:data-updated'))
       onClose()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to save task'
@@ -164,6 +165,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       maxWidth="md"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {projects.length === 0 && !isLoadingMetadata && (
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-800 dark:text-amber-300">
+            No projects available. Please create a project workspace first before creating tasks.
+          </div>
+        )}
+
         {/* Title */}
         <Input
           label="Title"

@@ -87,12 +87,14 @@ export function formatDueDate(
     }
   }
 
-  // Format month and day
   const monthNames = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ]
-  const formatted = `${monthNames[target.getMonth()]} ${target.getDate()}`
+  const formatted =
+    target.getFullYear() === today.getFullYear()
+      ? `${monthNames[target.getMonth()]} ${target.getDate()}`
+      : `${monthNames[target.getMonth()]} ${target.getDate()}, ${target.getFullYear()}`
   return { label: formatted, isOverdue: false, isSoon: soon }
 }
 

@@ -70,6 +70,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
       }
 
       onSuccess?.(result)
+      window.dispatchEvent(new CustomEvent('projectflow:data-updated'))
       onClose()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to save project'

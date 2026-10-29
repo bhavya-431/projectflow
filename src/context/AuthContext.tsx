@@ -107,6 +107,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user])
 
   const switchDemoUser = useCallback((userId: string) => {
+    if (isSupabaseConfigured()) {
+      console.warn('Demo user switching is disabled when live Supabase is connected.')
+      return
+    }
     const users = localStore.getUsers()
     const target = users.find((u) => u.id === userId)
     if (target) {
@@ -116,6 +120,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [])
 
   const resetDemoData = useCallback(() => {
+    if (isSupabaseConfigured()) {
+      console.warn('Reset demo data is disabled when live Supabase is connected.')
+      return
+    }
     localStore.resetAll()
     setUser(localStore.getCurrentUser())
     window.location.reload()

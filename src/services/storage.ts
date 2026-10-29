@@ -9,6 +9,7 @@ import {
 
 const STORAGE_KEYS = {
   CURRENT_USER: 'projectflow_current_user_v1',
+  IS_LOGGED_OUT: 'projectflow_is_logged_out_v1',
   USERS: 'projectflow_users_v1',
   PROJECTS: 'projectflow_projects_v1',
   PROJECT_MEMBERS: 'projectflow_members_v1',
@@ -37,11 +38,33 @@ function setItem<T>(key: string, value: T): void {
 
 export const localStore = {
   // Current user
-  getCurrentUser(): Profile {
+  getCurrentUser(): Profile | null {
+    try {
+      if (localStorage.getItem(STORAGE_KEYS.IS_LOGGED_OUT) === 'true') {
+        return null
+      }
+    } catch {
+      // Fallback
+    }
     return getItem<Profile>(STORAGE_KEYS.CURRENT_USER, MOCK_CURRENT_USER)
   },
+
   setCurrentUser(user: Profile): void {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_OUT)
+    } catch {
+      // Ignore
+    }
     setItem(STORAGE_KEYS.CURRENT_USER, user)
+  },
+
+  clearCurrentUser(): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.IS_LOGGED_OUT, 'true')
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER)
+    } catch (e) {
+      console.error('Error clearing user session:', e)
+    }
   },
 
   // All Users
@@ -78,6 +101,11 @@ export const localStore = {
 
   // Reset to default seed data
   resetAll(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_OUT)
+    } catch {
+      // Ignore
+    }
     setItem(STORAGE_KEYS.CURRENT_USER, MOCK_CURRENT_USER)
     setItem(STORAGE_KEYS.USERS, MOCK_USERS)
     setItem(STORAGE_KEYS.PROJECTS, MOCK_PROJECTS)

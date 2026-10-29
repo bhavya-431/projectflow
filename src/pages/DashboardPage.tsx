@@ -49,6 +49,9 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData()
+    const handleUpdate = () => loadDashboardData()
+    window.addEventListener('projectflow:data-updated', handleUpdate)
+    return () => window.removeEventListener('projectflow:data-updated', handleUpdate)
   }, [])
 
   const metrics = calculateDashboardMetrics(projects, tasks)

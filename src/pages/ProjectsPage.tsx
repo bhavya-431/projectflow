@@ -35,6 +35,9 @@ export const ProjectsPage: React.FC = () => {
 
   useEffect(() => {
     loadData()
+    const handleUpdate = () => loadData()
+    window.addEventListener('projectflow:data-updated', handleUpdate)
+    return () => window.removeEventListener('projectflow:data-updated', handleUpdate)
   }, [])
 
   const filteredProjects = projects.filter((p) => {

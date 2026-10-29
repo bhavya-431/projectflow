@@ -199,8 +199,9 @@ export const authService = {
   async signOut(): Promise<void> {
     if (isSupabaseConfigured() && supabase) {
       await supabase.auth.signOut()
+    } else {
+      localStore.clearCurrentUser()
     }
-    // In local demo mode, signout sets current user to null or demo user on next login
   },
 
   async updateProfile(userId: string, data: { fullName: string; avatarUrl?: string }): Promise<Profile> {
@@ -220,8 +221,10 @@ export const authService = {
 
     // Local Store update
     const currentUser = localStore.getCurrentUser()
+    if (!currentUser) throw new Error('User not found in session')
     const updated: Profile = {
       ...currentUser,
+      id: currentUser.id,
       fullName: data.fullName,
       avatarUrl: data.avatarUrl || currentUser.avatarUrl,
     }

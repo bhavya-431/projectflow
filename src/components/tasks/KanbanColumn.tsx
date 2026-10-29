@@ -60,7 +60,8 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col bg-slate-100/70 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800/80 border-t-4 ${getBorderAccent()} p-3.5 transition-colors min-h-[500px] ${
+      id={`column-${status}`}
+      className={`flex flex-col w-full min-w-[285px] sm:min-w-[320px] md:min-w-0 flex-1 snap-center shrink-0 md:shrink bg-slate-100/70 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800/80 border-t-4 ${getBorderAccent()} p-3.5 transition-colors min-h-[500px] ${
         isOver ? 'bg-indigo-50/40 dark:bg-indigo-950/20 ring-2 ring-indigo-400/40' : ''
       }`}
     >
