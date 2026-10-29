@@ -1,0 +1,12 @@
+-- ==============================================================================
+-- PROJECTFLOW: Sample Seed Data
+-- ==============================================================================
+-- Note: Replace the UUIDs below with real auth.users IDs from your Supabase Auth table.
+-- For local mock testing, ProjectFlow includes rich typed mock data automatically!
+-- ==============================================================================
+
+-- Example:
+-- INSERT INTO public.projects (id, name, description, owner_id)
+-- VALUES 
+--   ('11111111-1111-1111-1111-111111111111', 'Website Redesign', 'Complete redesign of marketing site and design system', auth.uid()),
+--   ('22222222-2222-2222-2222-222222222222', 'Mobile App Launch', 'Cross-platform mobile application build for iOS and Android', auth.uid());
